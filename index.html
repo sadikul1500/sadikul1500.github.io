@@ -4,8 +4,63 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>Hello World</h1>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Personal Study Notebook</p>
+        <h1>Design Patterns Notes</h1>
+        <p class="hero-text">
+          A curated notebook of software design patterns, written as concise study notes with
+          practical examples, tradeoffs, and implementation sketches.
+        </p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="factory-pattern.html">Open Factory Pattern</a>
+          <a class="button button-secondary" href="#catalog">Browse Notes</a>
+        </div>
+      </div>
+      <aside class="hero-panel">
+        <p class="panel-label">Current Focus</p>
+        <h2>Creational Patterns</h2>
+        <p>
+          Start with the Factory Pattern and build a formal, easy-to-revisit reference collection.
+        </p>
+        <ul class="panel-list">
+          <li>Problem-driven explanation</li>
+          <li>Traditional vs improved design</li>
+          <li>Code blocks separated from theory</li>
+        </ul>
+      </aside>
+    </header>
+
+    <main>
+      <section class="section" id="catalog">
+        <div class="section-heading">
+          <p class="eyebrow">Notebook Catalog</p>
+          <h2>Available Notes</h2>
+          <p>
+            Each note is designed as a structured study page with definition, motivation,
+            implementation idea, and code examples.
+          </p>
+        </div>
+
+        <div class="note-grid">
+          <a class="note-card" href="factory-pattern.html">
+            <span class="card-badge">01</span>
+            <h3>Factory Pattern</h3>
+            <p>
+              Learn how to create objects without tightly coupling client code to concrete classes.
+            </p>
+            <span class="card-link">Read note</span>
+          </a>
+        </div>
+      </section>
+    </main>
+  </div>
 </body>
 </html>
