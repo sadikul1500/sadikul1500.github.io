@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Singleton Pattern | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Creational Design Pattern</p>
+      <h1>Singleton Pattern</h1>
+      <p class="hero-text narrow">
+        The Singleton Pattern is about restriction: it ensures there is only one instance of a
+        class in the entire application and provides a shared access point to it.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Singleton is entirely about restriction.</li>
+          <li>It ensures that a class has only one instance in the entire application.</li>
+          <li>It also provides a global point of access to that instance.</li>
+          <li>It is useful when a shared resource must never be controlled by multiple separate instances.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>When We Need It</h2>
+        <ul class="note-list">
+          <li>Use Singleton when a shared resource absolutely cannot have multiple controllers.</li>
+          <li>Use it when strict control over a global variable or global state is required.</li>
+          <li>It helps when every part of the system must read and update the exact same data state.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Core Rule</h2>
+        <p>
+          The usual structure is simple: make the constructor private, keep a private static
+          instance field, and expose a public static method that returns that single shared object.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Problematic Scenario</h2>
+        <p class="section-intro">
+          Without Singleton, multiple services can create separate logger objects. That leads to
+          tight coupling and makes a shared resource, such as a log file, harder to control safely.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>Multiple services creating separate loggers</span>
+          </div>
+          <pre><code><span class="code-keyword">public class</span> <span class="code-type">Logger</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">Log</span>(<span class="code-type">string</span> message)
+    {
+        <span class="code-comment">// Code to open 'app.log' and write the message</span>
+        Console.WriteLine($<span class="code-string">"Writing to file: {message}"</span>);
+    }
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">PaymentService</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">Process</span>()
+    {
+        <span class="code-comment">// TIGHT COUPLING &amp; RESOURCE DANGER</span>
+        <span class="code-type">Logger</span> log = <span class="code-keyword">new</span> <span class="code-type">Logger</span>();
+        log.Log(<span class="code-string">"Payment processed."</span>);
+    }
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">EmailService</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">Send</span>()
+    {
+        <span class="code-comment">// MULTIPLE INSTANCES</span>
+        <span class="code-type">Logger</span> log = <span class="code-keyword">new</span> <span class="code-type">Logger</span>();
+        log.Log(<span class="code-string">"Email sent."</span>);
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Why This Is a Problem</h2>
+        <ul class="note-list">
+          <li>Every class can create its own instance of a shared resource.</li>
+          <li>The system loses strict control over a global state or file handler.</li>
+          <li>Client classes become tightly coupled to object creation.</li>
+          <li>Different instances may compete to manage the same underlying resource.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Singleton Pattern Solution</h2>
+        <p>
+          Restrict direct construction and force the application to request the logger through a
+          shared access method. That method creates the object once and returns the same instance on
+          every future call.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Pseudocode</span>
+            <span>Singleton-based design</span>
+          </div>
+          <pre><code><span class="code-keyword">public sealed class</span> <span class="code-type">Logger</span>
+{
+    <span class="code-keyword">private static</span> <span class="code-type">Logger</span> _logger;
+
+    <span class="code-keyword">private</span> <span class="code-method">Logger</span>();
+
+    <span class="code-keyword">public static</span> <span class="code-type">Logger</span> <span class="code-method">GetInstance</span>()
+    {
+        <span class="code-keyword">if</span> (_logger == <span class="code-keyword">null</span>)
+        {
+            _logger = <span class="code-keyword">new</span> <span class="code-type">Logger</span>();
+        }
+
+        <span class="code-keyword">return</span> _logger;
+    }
+
+    <span class="code-method">Log</span>(<span class="code-type">string</span> text): <span class="code-type">void</span>
+}
+
+main()
+{
+    <span class="code-type">Logger</span> l1 = <span class="code-type">Logger</span>.<span class="code-method">GetInstance</span>();
+    l1.log(..);
+
+    <span class="code-type">Logger</span> l2 = <span class="code-type">Logger</span>.<span class="code-method">GetInstance</span>();
+    l2.log(..);
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          Singleton does not focus on flexible creation. Instead, it focuses on preventing extra
+          instances. The class itself controls access to its only object and guarantees that everyone
+          uses the same shared instance.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Guarantees that only one instance exists in the application.</li>
+          <li>Provides one consistent global access point.</li>
+          <li>Protects shared resources from uncontrolled multiple instances.</li>
+          <li>Makes sure all parts of the system see the same shared state.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
