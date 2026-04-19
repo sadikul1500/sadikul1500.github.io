@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Builder Pattern | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Creational Design Pattern</p>
+      <h1>Builder Pattern</h1>
+      <p class="hero-text narrow">
+        The Builder Pattern creates complex objects step by step and separates construction logic
+        from the final product representation.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Builder is a creational design pattern that lets you construct complex objects step by step.</li>
+          <li>It extracts construction code from the product class and moves it into a separate builder object.</li>
+          <li>It is especially useful when the same construction process can produce different representations.</li>
+          <li>A Director can coordinate the steps in a fixed order to create standard configurations.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Main Idea</h2>
+        <p>
+          A complex object often needs many properties, options, and configuration steps. If all of
+          that logic stays inside the product class, construction becomes hard to read and easy to
+          misuse. Builder separates the "how to build" logic from the "what gets built" result.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Problem with Normal Code</h2>
+        <p class="section-intro">
+          A large constructor with many parameters is difficult to read and easy to misuse. The
+          caller must remember what every argument means and pass values even for optional features.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>Telescoping constructor problem</span>
+          </div>
+          <pre><code><span class="code-keyword">public class</span> <span class="code-type">Car</span>
+{
+    <span class="code-comment">// A massive list of properties</span>
+    <span class="code-keyword">public</span> <span class="code-type">string</span> Engine;
+    <span class="code-keyword">public</span> <span class="code-type">int</span> Seats;
+    <span class="code-keyword">public</span> <span class="code-type">bool</span> HasGPS;
+    <span class="code-keyword">public</span> <span class="code-type">bool</span> HasTripComputer;
+    <span class="code-keyword">public</span> <span class="code-type">string</span> PaintColor;
+
+    <span class="code-comment">// THE PROBLEM: The Telescoping Constructor</span>
+    <span class="code-keyword">public</span> <span class="code-method">Car</span>(<span class="code-type">string</span> engine, <span class="code-type">int</span> seats, <span class="code-type">bool</span> hasGps, <span class="code-type">bool</span> hasTripComputer, <span class="code-type">string</span> paintColor)
+    {
+        Engine = engine;
+        Seats = seats;
+        HasGPS = hasGps;
+        HasTripComputer = hasTripComputer;
+        PaintColor = paintColor;
+    }
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">App</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">OrderCars</span>()
+    {
+        <span class="code-comment">// We want a simple sports car, but we are forced to pass confusing values</span>
+        <span class="code-comment">// for things we don't care about. What does "true, false" mean here?</span>
+        <span class="code-type">Car</span> sportsCar = <span class="code-keyword">new</span> <span class="code-type">Car</span>(<span class="code-string">"V8"</span>, 2, <span class="code-keyword">true</span>, <span class="code-keyword">false</span>, <span class="code-string">"Red"</span>);
+
+        <span class="code-comment">// We want a cheap city car. We still have to pass feature flags manually.</span>
+        <span class="code-type">Car</span> cheapCar = <span class="code-keyword">new</span> <span class="code-type">Car</span>(<span class="code-string">"V4"</span>, 4, <span class="code-keyword">false</span>, <span class="code-keyword">false</span>, <span class="code-string">"White"</span>);
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Why This Is a Problem</h2>
+        <ul class="note-list">
+          <li>Constructors become long and hard to understand.</li>
+          <li>Calling code is less readable because raw values hide their meaning.</li>
+          <li>Optional configuration makes constructor signatures grow quickly.</li>
+          <li>Construction logic remains trapped inside the product class.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Builder Pattern Solution</h2>
+        <p>
+          Move construction steps into a dedicated builder interface and let concrete builders create
+          different results. One builder may produce a <code>Car</code>, while another builds a
+          <code>Manual</code> using the same sequence of steps. A Director can run those steps in a
+          predefined order for common configurations.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Pseudocode</span>
+            <span>Builder-based design</span>
+          </div>
+          <pre><code><span class="code-type">Car</span>: engine: str, seat: int, hasGPS: bool, ShowSpec(): void
+<span class="code-type">Manual</span>: document: string
+
+<span class="code-type">ICarBuilder</span>: Reset(), SetEngine(), SetSeat(), HasGPS()
+<span class="code-type">SuvCarBuilder</span>, <span class="code-type">ManualBuilder</span>: <span class="code-type">ICarBuilder</span>
+<span class="code-comment">// GetResult(): Car, GetResult(): Manual</span>
+
+<span class="code-type">Director</span>
+{
+    <span class="code-type">ICarBuilder</span> _b;
+
+    <span class="code-method">Director</span>(<span class="code-type">ICarBuilder</span> b): _b = b;
+
+    <span class="code-method">BuildCarTypeA</span>();
+    <span class="code-method">BuildCarTypeB</span>();
+}
+
+main class
+{
+    <span class="code-type">SuvCarBuilder</span> b = <span class="code-keyword">new</span> <span class="code-type">SuvCarBuilder</span>();
+    <span class="code-type">Director</span> d = <span class="code-keyword">new</span>(b);
+    d.BuildCarTypeA();
+    <span class="code-type">Car</span> typeA = b.GetResult();
+
+    <span class="code-type">ManualBuilder</span> b1 = <span class="code-keyword">new</span> <span class="code-type">ManualBuilder</span>();
+    d = <span class="code-keyword">new</span>(b1);
+    d.BuildCarTypeA();
+    <span class="code-type">Manual</span> m = b1.GetResult();
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Role of the Director</h2>
+        <p>
+          The Director is optional, but it is very helpful when the application needs standard build
+          recipes. Its job is to call building steps in a specific order, such as creating a standard
+          SUV, a sports car, or a documentation manual using the same process.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          Builder separates object construction from the final representation. The same sequence of
+          steps can produce different outputs, and the client no longer needs to manage a long,
+          fragile constructor call.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Makes object creation easier to read and maintain.</li>
+          <li>Removes complex construction logic from the product class.</li>
+          <li>Supports step-by-step creation with clearer intent.</li>
+          <li>Allows the same build process to create different representations.</li>
+          <li>Provides reusable standard configurations through the Director.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
