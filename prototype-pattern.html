@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prototype Pattern | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Creational Design Pattern</p>
+      <h1>Prototype Pattern</h1>
+      <p class="hero-text narrow">
+        The Prototype Pattern creates new objects by copying an existing one instead of building
+        every new object from the beginning.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Prototype creates new objects by copying an existing object.</li>
+          <li>Create exactly one fully initialized object, the prototype, and clone it when more are needed.</li>
+          <li>It is useful when construction is expensive and many objects are mostly identical.</li>
+          <li>It also helps hide complex setup logic from client code.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Main Idea</h2>
+        <p>
+          Instead of repeatedly calling a costly constructor, the application prepares one master
+          object and duplicates it. The clone receives the same initialized state, which avoids
+          paying the full setup cost every time.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Problematic Scenario</h2>
+        <p class="section-intro">
+          Imagine a video game that must spawn an army of 1,000 Orc enemies. If creating one Orc
+          requires expensive loading of models, scripts, and animation data, repeatedly calling
+          <code>new Orc()</code> can freeze the game.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>Expensive object creation for every enemy</span>
+          </div>
+          <pre><code><span class="code-keyword">public class</span> <span class="code-type">Orc</span>
+{
+    <span class="code-keyword">public</span> <span class="code-type">string</span> Name;
+    <span class="code-keyword">public</span> <span class="code-type">int</span> Health;
+    <span class="code-keyword">public</span> <span class="code-type">byte</span>[] Heavy3DModel; <span class="code-comment">// Pretend this is massive</span>
+
+    <span class="code-keyword">public</span> <span class="code-method">Orc</span>(<span class="code-type">string</span> name)
+    {
+        Name = name;
+        Health = 100;
+
+        <span class="code-comment">// THE PROBLEM: Expensive Initialization</span>
+        Heavy3DModel = <span class="code-keyword">new</span> <span class="code-type">byte</span>[1000000];
+    }
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">GameLevel</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">SpawnArmy</span>()
+    {
+        <span class="code-comment">// Spawning 1,000 will freeze the game.</span>
+        <span class="code-type">Orc</span> orc1 = <span class="code-keyword">new</span> <span class="code-type">Orc</span>(<span class="code-string">"Warrior"</span>);
+        <span class="code-type">Orc</span> orc2 = <span class="code-keyword">new</span> <span class="code-type">Orc</span>(<span class="code-string">"Warrior"</span>);
+        <span class="code-type">Orc</span> orc3 = <span class="code-keyword">new</span> <span class="code-type">Orc</span>(<span class="code-string">"Warrior"</span>);
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>When to Consider Prototype</h2>
+        <ul class="note-list">
+          <li>Creation is expensive.</li>
+          <li>Objects are mostly identical.</li>
+          <li>We want to hide creation complexity from the rest of the code.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Prototype Pattern Solution</h2>
+        <p>
+          Build one master copy fully, then duplicate it through a <code>Clone()</code> method.
+          The clone can reuse expensive data that is already prepared, and client code can create
+          more objects without knowing the details of the heavy initialization process.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Pseudocode</span>
+            <span>Prototype-based design</span>
+          </div>
+          <pre><code><span class="code-type">IPrototype&lt;T&gt;</span>: T Clone()
+
+<span class="code-type">Orc</span>: <span class="code-type">IPrototype&lt;Orc&gt;</span>
+{
+    <span class="code-type">string</span> name;
+    <span class="code-type">string</span> weapon;
+    <span class="code-type">int</span> health;
+    <span class="code-type">byte</span>[] heavy3dModel;
+
+    <span class="code-keyword">public</span> <span class="code-method">Orc</span>(<span class="code-type">string</span> name)
+    {
+        heavy3dModel = <span class="code-keyword">new</span> <span class="code-type">byte</span>[10000000];
+        ...
+    }
+
+    <span class="code-keyword">private</span> <span class="code-method">Orc</span>(<span class="code-type">Orc</span> source)
+    {
+        <span class="code-keyword">this</span>.name = source.name;
+        <span class="code-keyword">this</span>.weapon = source.weapon;
+        <span class="code-keyword">this</span>.health = source.health;
+        <span class="code-keyword">this</span>.heavy3dModel = source.heavy3dModel;
+    }
+
+    <span class="code-type">Orc</span> <span class="code-method">Clone</span>()
+    {
+        <span class="code-keyword">return</span> <span class="code-keyword">new</span> <span class="code-type">Orc</span>(<span class="code-keyword">this</span>);
+    }
+
+    <span class="code-method">ShowStat</span>(): <span class="code-type">void</span>
+}
+
+main class()
+{
+    <span class="code-type">Orc</span> masterCopy = <span class="code-keyword">new</span>();
+
+    var clone1 = masterCopy.Clone();
+    var clone2 = masterCopy.Clone();
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          The system pays the expensive setup cost only once. After that, new objects are produced
+          through copying. This makes bulk creation faster and keeps the client away from the
+          details of heavy initialization.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Reduces the cost of creating repeated complex objects.</li>
+          <li>Works well when many objects share the same initial state.</li>
+          <li>Hides construction complexity from the client.</li>
+          <li>Makes object creation faster in scenarios such as games, templates, and configuration copies.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
