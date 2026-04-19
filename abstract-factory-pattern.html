@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abstract Factory Pattern | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Creational Design Pattern</p>
+      <h1>Abstract Factory Pattern</h1>
+      <p class="hero-text narrow">
+        The Abstract Factory Pattern creates an entire family of related products through one
+        master interface, keeping creation logic grouped and consistent.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Abstract Factory is essentially Factory Method applied to more than one product.</li>
+          <li>It works with a set of related products, also called a product family.</li>
+          <li>Create one master interface, the Abstract Factory, to build every product in that family.</li>
+          <li>It is useful when a system must guarantee that compatible products are created together.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Main Idea</h2>
+        <p>
+          Factory Method usually focuses on one product. Abstract Factory extends that idea so a
+          single factory can create multiple related objects, such as a transport and its matching
+          packaging. Instead of asking, "Which truck should I make?", the question becomes,
+          "Which whole logistics family should I use?"
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Problematic Scenario</h2>
+        <p class="section-intro">
+          The client creates both transport and packaging directly. This means the client is tightly
+          coupled to multiple concrete classes at once, and it must keep those choices consistent.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>Tightly coupled family creation</span>
+          </div>
+          <pre><code><span class="code-keyword">public class</span> <span class="code-type">LogisticsApplication</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">PrepareShipment</span>(<span class="code-type">string</span> mode)
+    {
+        <span class="code-type">ITransport</span> transport;
+        <span class="code-type">IPackaging</span> packaging;
+
+        <span class="code-comment">// TIGHT COUPLING</span>
+        <span class="code-keyword">if</span> (mode == <span class="code-string">"Road"</span>)
+        {
+            transport = <span class="code-keyword">new</span> <span class="code-type">Truck</span>();
+            packaging = <span class="code-keyword">new</span> <span class="code-type">CardboardBox</span>();
+            <span class="code-comment">// more code</span>
+        }
+        <span class="code-keyword">else if</span> (mode == <span class="code-string">"Sea"</span>)
+        {
+            transport = <span class="code-keyword">new</span> <span class="code-type">Ship</span>();
+            packaging = <span class="code-keyword">new</span> <span class="code-type">ShippingContainer</span>();
+        }
+
+        transport.Deliver();
+        packaging.Pack();
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Why This Becomes Difficult</h2>
+        <ul class="note-list">
+          <li>The client knows too much about multiple concrete products.</li>
+          <li>Related objects must be selected together, which increases the chance of mismatch.</li>
+          <li>Every new family, such as Air or Rail, adds more branching logic in the client.</li>
+          <li>Creation logic and business workflow become mixed in the same method.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Abstract Factory Solution</h2>
+        <p>
+          Define a master factory interface that creates each product needed by the workflow. A road
+          factory returns road-friendly products, while a sea factory returns sea-friendly products.
+          The service uses the abstract factory and stays independent from concrete implementations.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Pseudocode</span>
+            <span>Abstract Factory implementation</span>
+          </div>
+          <pre><code><span class="code-type">ITransport</span>: Deliver()
+<span class="code-type">Truck</span>, <span class="code-type">Ship</span>: <span class="code-type">ITransport</span>
+
+<span class="code-type">IPackage</span>: Pack()
+<span class="code-type">Box</span>, <span class="code-type">Container</span>: <span class="code-type">IPackage</span>
+
+<span class="code-type">ILogisticFamily</span>: CreateTransport(), CreatePackage()
+<span class="code-type">RoadLogisticFamily</span>, <span class="code-type">SeaLogisticFamily</span>: <span class="code-type">ILogisticFamily</span>
+
+<span class="code-keyword">class</span> <span class="code-type">LogisticFamilyService</span>
+{
+    <span class="code-type">ITransport</span> t;
+    <span class="code-type">IPackage</span> p;
+
+    <span class="code-method">SetFamily</span>(<span class="code-type">ILogisticFamily</span> f)
+    {
+        t = f.CreateTransport();
+        p = f.CreatePackage();
+    }
+
+    <span class="code-method">Shipment</span>()
+    {
+        p.pack();
+        t.deliver();
+    }
+}
+
+main class
+{
+    <span class="code-type">LogisticFamilyService</span> l = <span class="code-keyword">new</span>();
+    string mode;
+    <span class="code-type">ILogisticFamily</span> lf;
+
+    <span class="code-keyword">if</span> (mode == <span class="code-string">"road"</span>) lf = <span class="code-keyword">new</span> <span class="code-type">RoadLogisticFamily</span>();
+    <span class="code-keyword">if</span> (mode == <span class="code-string">"sea"</span>) lf = <span class="code-keyword">new</span> <span class="code-type">SeaLogisticFamily</span>();
+
+    l.SetFamily(lf);
+    l.Shipment();
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          Instead of creating one product through one factory method, the system selects one family
+          factory. That factory then creates all related objects needed by the workflow. This keeps
+          product combinations consistent and reduces client-side branching.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Difference from Factory Method</h2>
+        <div class="table-wrap">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Factory Method</th>
+                <th>Abstract Factory</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>What does it make?</td>
+                <td>One specific product, such as a transport.</td>
+                <td>A family of related products, such as a transport and a box.</td>
+              </tr>
+              <tr>
+                <td>How does it work?</td>
+                <td>Inheritance. A base class forces subclasses to override one creation method.</td>
+                <td>Composition. An interface forces concrete factories to implement multiple creation methods.</td>
+              </tr>
+              <tr>
+                <td>Where is the business logic?</td>
+                <td>Inside the creator. The base class runs the workflow and requests the product.</td>
+                <td>Outside the factory. The factory only creates parts and an external service uses them.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Keeps families of related objects consistent.</li>
+          <li>Reduces tight coupling to concrete implementations.</li>
+          <li>Makes it easier to introduce new product families later.</li>
+          <li>Separates object creation from shipment workflow logic.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

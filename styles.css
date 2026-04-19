@@ -353,6 +353,39 @@ p {
   color: #b49a83;
 }
 
+.table-wrap {
+  margin-top: 1rem;
+  overflow-x: auto;
+  border: 1px solid rgba(95, 67, 47, 0.14);
+  border-radius: 16px;
+}
+
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 680px;
+  background: linear-gradient(180deg, rgba(255, 254, 251, 0.98), rgba(246, 237, 224, 0.92));
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 1rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(95, 67, 47, 0.12);
+  line-height: 1.6;
+}
+
+.comparison-table th {
+  color: var(--accent-deep);
+  background: rgba(122, 75, 43, 0.08);
+  font-weight: 700;
+}
+
+.comparison-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
 @media (max-width: 880px) {
   .hero {
     grid-template-columns: 1fr;
