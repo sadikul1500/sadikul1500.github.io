@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Composite Pattern | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body id="top" data-prev="adapter-pattern.html" data-next="">
+  <div class="page-shell">
+    <nav class="note-nav" aria-label="Pattern navigation"></nav>
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Structural Design Pattern</p>
+      <h1>Composite Pattern</h1>
+      <p class="hero-text narrow">
+        The Composite Pattern lets the client treat one object and a whole hierarchy of objects in
+        the exact same way through one shared interface.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Composite is about treating a single object and a massive group of objects in the same way.</li>
+          <li>It works best when data forms a tree or part-whole hierarchy.</li>
+          <li>Leaf objects and container objects both expose the same interface to the client.</li>
+          <li>The client sends one command without caring whether it reaches one item or an entire branch.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Problematic Scenario</h2>
+        <p class="section-intro">
+          Imagine a shipping system with products and boxes. A box can contain products, and it can
+          also contain smaller boxes. The moment nested boxes appear, manual traversal becomes messy,
+          repetitive, and fragile.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>Manual traversal through nested boxes</span>
+          </div>
+          <pre><code><span class="code-comment">// 1. A simple item</span>
+<span class="code-keyword">public class</span> <span class="code-type">Product</span>
+{
+    <span class="code-keyword">public</span> <span class="code-type">string</span> Name;
+    <span class="code-keyword">public</span> <span class="code-type">int</span> Price;
+}
+
+<span class="code-comment">// 2. A complex item that holds things</span>
+<span class="code-keyword">public class</span> <span class="code-type">Box</span>
+{
+    <span class="code-keyword">public</span> <span class="code-type">List</span>&lt;<span class="code-type">Product</span>&gt; Products = <span class="code-keyword">new</span> <span class="code-type">List</span>&lt;<span class="code-type">Product</span>&gt;();
+    <span class="code-keyword">public</span> <span class="code-type">List</span>&lt;<span class="code-type">Box</span>&gt; SmallerBoxes = <span class="code-keyword">new</span> <span class="code-type">List</span>&lt;<span class="code-type">Box</span>&gt;();
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">ShippingApp</span>
+{
+    <span class="code-keyword">public</span> <span class="code-type">int</span> <span class="code-method">CalculateTotal</span>(<span class="code-type">Box</span> mainBox)
+    {
+        <span class="code-type">int</span> total = 0;
+
+        <span class="code-comment">// PROBLEM: We have to manually traverse every layer!</span>
+        <span class="code-keyword">foreach</span> (<span class="code-keyword">var</span> product <span class="code-keyword">in</span> mainBox.Products)
+        {
+            total += product.Price;
+        }
+
+        <span class="code-keyword">foreach</span> (<span class="code-keyword">var</span> smallBox <span class="code-keyword">in</span> mainBox.SmallerBoxes)
+        {
+            <span class="code-keyword">foreach</span> (<span class="code-keyword">var</span> p <span class="code-keyword">in</span> smallBox.Products)
+            {
+                total += p.Price;
+            }
+
+            <span class="code-comment">// What if the small box has even SMALLER boxes?!</span>
+            <span class="code-comment">// The code breaks unless we write endless nested loops!</span>
+        }
+
+        <span class="code-keyword">return</span> total;
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>When to Apply Composite</h2>
+        <ul class="note-list">
+          <li>Data is structured like a tree, with branches and leaves.</li>
+          <li>The client is forced to treat leaf objects and container objects differently.</li>
+          <li>We want the client to call something like <code>GetPrice()</code> without caring whether it is talking to one item or a huge branch.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Why This Gets Messy</h2>
+        <p>
+          Manual nested loops do not scale. Each new layer of nesting forces more traversal logic
+          into the client. That makes the code harder to extend and couples the client to the exact
+          internal structure of the tree.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Composite Pattern Solution</h2>
+        <p>
+          Introduce one common component interface for both products and boxes. A product returns
+          its own price. A box loops through its children and asks each child for its price. Because
+          both implement the same contract, the client can treat them uniformly.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C# Pseudocode</span>
+            <span>Composite-based design</span>
+          </div>
+          <pre><code><span class="code-comment">// 1. Component Interface</span>
+<span class="code-type">IItem</span>: <span class="code-method">GetPrice</span>() -&gt; <span class="code-type">int</span>
+
+<span class="code-comment">// 2. Leaf</span>
+<span class="code-type">Product</span>: <span class="code-type">IItem</span>
+{
+    <span class="code-type">string</span> name;
+    <span class="code-type">int</span> price;
+
+    <span class="code-method">GetPrice</span>() -&gt; <span class="code-type">int</span>
+    {
+        <span class="code-keyword">return</span> price;
+    }
+}
+
+<span class="code-comment">// 3. Composite</span>
+<span class="code-type">Box</span>: <span class="code-type">IItem</span>
+{
+    <span class="code-type">List</span>&lt;<span class="code-type">IItem</span>&gt; items = <span class="code-keyword">new</span> <span class="code-type">List</span>&lt;<span class="code-type">IItem</span>&gt;();
+
+    <span class="code-method">Add</span>(<span class="code-type">IItem</span> item)
+    {
+        items.add(item);
+    }
+
+    <span class="code-method">GetPrice</span>() -&gt; <span class="code-type">int</span>
+    {
+        <span class="code-type">int</span> total = 0;
+
+        <span class="code-keyword">foreach</span> (item <span class="code-keyword">in</span> items)
+        {
+            total += item.GetPrice();
+        }
+
+        <span class="code-keyword">return</span> total;
+    }
+}
+
+<span class="code-comment">// 4. Execution</span>
+main()
+{
+    <span class="code-type">Product</span> phone = <span class="code-keyword">new</span> <span class="code-type">Product</span>(<span class="code-string">"Phone"</span>, 1000);
+    <span class="code-type">Product</span> charger = <span class="code-keyword">new</span> <span class="code-type">Product</span>(<span class="code-string">"Charger"</span>, 50);
+    <span class="code-type">Product</span> headphone = <span class="code-keyword">new</span> <span class="code-type">Product</span>(<span class="code-string">"Headphone"</span>, 200);
+
+    <span class="code-type">Box</span> smallBox = <span class="code-keyword">new</span> <span class="code-type">Box</span>();
+    smallBox.Add(phone);
+    smallBox.Add(charger);
+
+    <span class="code-type">Box</span> largeBox = <span class="code-keyword">new</span> <span class="code-type">Box</span>();
+    largeBox.Add(smallBox);
+    largeBox.Add(headphone);
+
+    <span class="code-type">int</span> finalPrice = largeBox.GetPrice();
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          The client speaks to everything through the same interface. A single product answers
+          directly, while a box delegates the same request to its children and combines the result.
+          That is what makes tree structures feel simple to use.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Lets the client treat leaves and containers uniformly.</li>
+          <li>Works naturally with part-whole tree structures.</li>
+          <li>Removes fragile nested traversal logic from the client.</li>
+          <li>Makes recursive operations like pricing, rendering, and deletion easier to extend.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="note-nav.js"></script>
+</body>
+</html>
