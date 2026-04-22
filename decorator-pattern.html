@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Decorator Pattern | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body id="top" data-prev="composite-pattern.html" data-next="">
+  <div class="page-shell">
+    <nav class="note-nav" aria-label="Pattern navigation"></nav>
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Structural Design Pattern</p>
+      <h1>Decorator Pattern</h1>
+      <p class="hero-text narrow">
+        The Decorator Pattern adds new behaviors to an object dynamically at runtime by wrapping it
+        with small feature objects instead of creating endless subclasses.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Decorator is about adding new behaviors or features to an object dynamically at runtime.</li>
+          <li>It avoids feature growth through inheritance and uses wrapping instead.</li>
+          <li>The pattern says: stop using inheritance to add features, and start using composition.</li>
+          <li>Each decorator adds one focused responsibility while keeping the same interface as the wrapped object.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Problematic Scenario</h2>
+        <p class="section-intro">
+          A coffee ordering system starts simply, but each ingredient combination becomes a new
+          subclass. As soon as more add-ons appear, the number of subclasses grows out of control.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>Inheritance explosion for coffee combinations</span>
+          </div>
+          <pre><code><span class="code-comment">// The Base</span>
+<span class="code-keyword">public class</span> <span class="code-type">SimpleCoffee</span>
+{
+    <span class="code-keyword">public virtual</span> <span class="code-type">string</span> Description =&gt; <span class="code-string">"Simple Coffee"</span>;
+    <span class="code-keyword">public virtual</span> <span class="code-type">double</span> Cost =&gt; 2.00;
+}
+
+<span class="code-comment">// The Subclasses (PROBLEM: Inheritance Explosion)</span>
+<span class="code-keyword">public class</span> <span class="code-type">MilkCoffee</span> : <span class="code-type">SimpleCoffee</span>
+{
+    <span class="code-keyword">public override</span> <span class="code-type">string</span> Description =&gt; <span class="code-string">"Simple Coffee, Milk"</span>;
+    <span class="code-keyword">public override</span> <span class="code-type">double</span> Cost =&gt; 2.50;
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">SugarCoffee</span> : <span class="code-type">SimpleCoffee</span>
+{
+    <span class="code-keyword">public override</span> <span class="code-type">string</span> Description =&gt; <span class="code-string">"Simple Coffee, Sugar"</span>;
+    <span class="code-keyword">public override</span> <span class="code-type">double</span> Cost =&gt; 2.25;
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">VanillaMilkSugarCoffee</span> : <span class="code-type">SimpleCoffee</span>
+{
+    <span class="code-keyword">public override</span> <span class="code-type">string</span> Description =&gt; <span class="code-string">"Simple Coffee, Vanilla, Milk, Sugar"</span>;
+    <span class="code-keyword">public override</span> <span class="code-type">double</span> Cost =&gt; 3.50;
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">CoffeeApp</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">Order</span>()
+    {
+        <span class="code-comment">// If we add a new ingredient like "Caramel", we have to create</span>
+        <span class="code-comment">// many new subclasses to cover all the combinations!</span>
+        <span class="code-keyword">var</span> myDrink = <span class="code-keyword">new</span> <span class="code-type">VanillaMilkSugarCoffee</span>();
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>When to Apply Decorator</h2>
+        <ul class="note-list">
+          <li>We have a rapidly growing number of subclasses just to handle different feature combinations.</li>
+          <li>We need to add or remove responsibilities to an object at runtime.</li>
+          <li>Inheritance is impossible because the class is sealed or final, but we still need extra behavior.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Core Shift</h2>
+        <p>
+          Decorator says: stop using inheritance, which models an <code>is-a</code> relationship,
+          and start using composition, which models a <code>has-a</code> relationship. Instead of
+          creating a new subclass for every combination, wrap one coffee object with additional
+          feature objects.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Decorator Pattern Solution</h2>
+        <p>
+          Define one coffee interface, create a simple concrete coffee, then build decorators that
+          hold an inner coffee object and add their own cost and description on top of it. Features
+          can be layered in any order at runtime.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Pseudocode</span>
+            <span>Decorator-based design</span>
+          </div>
+          <pre><code><span class="code-type">ICoffee</span>:
+    <span class="code-method">GetDescription</span>() -&gt; <span class="code-type">string</span>
+    <span class="code-method">GetCost</span>() -&gt; <span class="code-type">double</span>
+
+<span class="code-type">SimpleCoffee</span>: <span class="code-type">ICoffee</span>
+{
+    <span class="code-method">GetDescription</span>() =&gt; <span class="code-keyword">return</span> <span class="code-string">"Simple Coffee"</span>;
+    <span class="code-method">GetCost</span>() =&gt; <span class="code-keyword">return</span> 2.00;
+}
+
+<span class="code-keyword">abstract class</span> <span class="code-type">CoffeeDecorator</span>: <span class="code-type">ICoffee</span>
+{
+    <span class="code-type">ICoffee</span> _coffee;
+
+    <span class="code-method">CoffeeDecorator</span>(<span class="code-type">ICoffee</span> c) =&gt; _coffee = c;
+
+    <span class="code-keyword">virtual</span> <span class="code-method">GetDescription</span>() =&gt; <span class="code-keyword">return</span> _coffee.GetDescription();
+    <span class="code-keyword">virtual</span> <span class="code-method">GetCost</span>() =&gt; <span class="code-keyword">return</span> _coffee.GetCost();
+}
+
+<span class="code-type">MilkDecorator</span>: <span class="code-type">CoffeeDecorator</span>
+{
+    <span class="code-comment">// no variable is needed here</span>
+    <span class="code-method">MilkDecorator</span>(<span class="code-type">ICoffee</span> c): <span class="code-keyword">base</span>(c) {}
+
+    <span class="code-keyword">override</span> <span class="code-method">GetDescription</span>() =&gt; <span class="code-keyword">return</span> <span class="code-keyword">base</span>.GetDescription() + <span class="code-string">", Milk"</span>;
+    <span class="code-keyword">override</span> <span class="code-method">GetCost</span>() =&gt; <span class="code-keyword">return</span> <span class="code-keyword">base</span>.GetCost() + 0.50;
+}
+
+<span class="code-type">VanillaDecorator</span>: <span class="code-type">CoffeeDecorator</span>
+{
+    <span class="code-method">VanillaDecorator</span>(<span class="code-type">ICoffee</span> c): <span class="code-keyword">base</span>(c) {}
+
+    <span class="code-keyword">override</span> <span class="code-method">GetDescription</span>() =&gt; <span class="code-keyword">return</span> <span class="code-keyword">base</span>.GetDescription() + <span class="code-string">", Vanilla"</span>;
+    <span class="code-keyword">override</span> <span class="code-method">GetCost</span>() =&gt; <span class="code-keyword">return</span> <span class="code-keyword">base</span>.GetCost() + 0.60;
+}
+
+main
+{
+    <span class="code-type">ICoffee</span> drink = <span class="code-keyword">new</span> <span class="code-type">SimpleCoffee</span>();
+    drink = <span class="code-keyword">new</span> <span class="code-type">MilkDecorator</span>(drink);
+    drink = <span class="code-keyword">new</span> <span class="code-type">VanillaDecorator</span>(drink);
+
+    Console.WriteLine(drink.GetDescription() + <span class="code-string">" | $"</span> + drink.GetCost());
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          A decorator keeps the same interface as the original object, but adds extra behavior
+          before or after delegating to the wrapped object. That lets features be stacked one by one
+          without changing the base class.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Avoids inheritance explosion from feature combinations.</li>
+          <li>Adds or removes behavior dynamically at runtime.</li>
+          <li>Keeps each feature isolated in a small reusable class.</li>
+          <li>Works even when subclassing is not allowed.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="note-nav.js"></script>
+</body>
+</html>
