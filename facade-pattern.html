@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Facade Pattern | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body id="top" data-prev="decorator-pattern.html" data-next="">
+  <div class="page-shell">
+    <nav class="note-nav" aria-label="Pattern navigation"></nav>
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Structural Design Pattern</p>
+      <h1>Facade Pattern</h1>
+      <p class="hero-text narrow">
+        The Facade Pattern is about hiding complexity by placing one clean front-facing class in
+        front of a large, messy subsystem.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Facade is entirely about hiding complexity.</li>
+          <li>It provides one simple interface in front of a complex subsystem.</li>
+          <li>The client talks to the facade instead of coordinating many subsystem classes directly.</li>
+          <li>The underlying subsystem still exists, but the facade makes common workflows easier to use.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Problematic Scenario</h2>
+        <p class="section-intro">
+          Imagine a smart-home movie setup. Starting movie night means coordinating a television,
+          sound system, lights, and popcorn maker. Without a facade, the client must remember and
+          manually execute every step in the right order.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>Client manually coordinating the whole subsystem</span>
+          </div>
+          <pre><code><span class="code-comment">// 1. The Complex Subsystem Classes</span>
+<span class="code-keyword">public class</span> <span class="code-type">TV</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">TurnOn</span>() { }
+    <span class="code-keyword">public void</span> <span class="code-method">SetInput</span>(<span class="code-type">string</span> input) { }
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">SoundSystem</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">TurnOn</span>() { }
+    <span class="code-keyword">public void</span> <span class="code-method">SetVolume</span>(<span class="code-type">int</span> level) { }
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">Lights</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">Dim</span>(<span class="code-type">int</span> percentage) { }
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">PopcornMaker</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">TurnOn</span>() { }
+    <span class="code-keyword">public void</span> <span class="code-method">StartPopping</span>() { }
+}
+
+<span class="code-comment">// 2. The Client</span>
+<span class="code-keyword">public class</span> <span class="code-type">SmartHomeApp</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">StartMovieNight</span>()
+    {
+        <span class="code-comment">// PROBLEM: The client has to coordinate EVERYTHING manually.</span>
+        <span class="code-comment">// If they want to watch a movie tomorrow, they have to write all this again.</span>
+        <span class="code-type">TV</span> tv = <span class="code-keyword">new</span> <span class="code-type">TV</span>();
+        <span class="code-type">SoundSystem</span> sound = <span class="code-keyword">new</span> <span class="code-type">SoundSystem</span>();
+        <span class="code-type">Lights</span> lights = <span class="code-keyword">new</span> <span class="code-type">Lights</span>();
+        <span class="code-type">PopcornMaker</span> popcorn = <span class="code-keyword">new</span> <span class="code-type">PopcornMaker</span>();
+
+        popcorn.TurnOn();
+        popcorn.StartPopping();
+        lights.Dim(20);
+        tv.TurnOn();
+        tv.SetInput(<span class="code-string">"HDMI 1"</span>);
+        sound.TurnOn();
+        sound.SetVolume(11);
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>When to Apply Facade</h2>
+        <ul class="note-list">
+          <li>Client code is talking to many classes just to perform one logical action.</li>
+          <li>A new developer faces a high learning curve because one workflow depends on many subsystem classes.</li>
+          <li>We want to provide a simple default interface to a large messy legacy system without rewriting it.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Core Idea</h2>
+        <p>
+          The pattern says: create a single waiter-like class, the facade. That facade becomes the
+          front-facing interface while the real subsystem remains behind it. The client gets a clean
+          method such as <code>StartShow()</code> instead of manually orchestrating everything.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Facade Pattern Solution</h2>
+        <p>
+          Build a <code>HomeTheaterFacade</code> that owns the subsystem objects and coordinates them
+          in the correct order. The client then performs the whole movie-night workflow with one or
+          two method calls.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Pseudocode</span>
+            <span>Facade-based design</span>
+          </div>
+          <pre><code><span class="code-comment">// Facade</span>
+<span class="code-keyword">class</span> <span class="code-type">HomeTheaterFacade</span>
+{
+    <span class="code-type">TV</span> tv;
+    <span class="code-type">SoundSystem</span> soundSystem;
+    <span class="code-type">Lights</span> lights;
+    <span class="code-type">PopcornMaker</span> popcornMaker;
+
+    <span class="code-method">Constructor</span>(tv, soundSystem, lights, popcornMaker) =&gt; <span class="code-keyword">this</span>.{x} = {x};
+
+    <span class="code-method">StartShow</span>()
+    {
+        tv.turnOn();
+        lights.dim(30);
+        soundSystem.setVolume(20);
+        popcornMaker.getPopCorn();
+    }
+
+    <span class="code-method">EndShow</span>()
+    {
+        popcornMaker.turnOff();
+        lights.turnOff();
+        soundSystem.turnOff();
+        tv.turnOff();
+    }
+}
+
+<span class="code-comment">// Client</span>
+main()
+{
+    <span class="code-keyword">var</span> homeTheaterFacade = <span class="code-keyword">new</span> <span class="code-type">HomeTheaterFacade</span>(
+        <span class="code-keyword">new</span> <span class="code-type">TV</span>(),
+        <span class="code-keyword">new</span> <span class="code-type">SoundSystem</span>(),
+        <span class="code-keyword">new</span> <span class="code-type">Lights</span>(),
+        <span class="code-keyword">new</span> <span class="code-type">PopcornMaker</span>()
+    );
+
+    <span class="code-comment">// The client enjoys a perfectly clean, two-line execution!</span>
+    homeTheaterFacade.StartShow();
+
+    <span class="code-comment">// ... later ...</span>
+    homeTheaterFacade.EndShow();
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          Facade does not remove the subsystem. It simply gives the client a simpler doorway into
+          it. The complexity stays hidden behind one service that knows how to coordinate the pieces
+          in a sensible default sequence.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Reduces tight coupling between client code and many subsystem classes.</li>
+          <li>Lowers the learning curve for common workflows.</li>
+          <li>Provides a clean front-facing API over a messy legacy system.</li>
+          <li>Keeps orchestration logic in one place instead of repeating it in clients.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="note-nav.js"></script>
+</body>
+</html>
