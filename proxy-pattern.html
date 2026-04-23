@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proxy Pattern | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body id="top" data-prev="facade-pattern.html" data-next="">
+  <div class="page-shell">
+    <nav class="note-nav" aria-label="Pattern navigation"></nav>
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Structural Design Pattern</p>
+      <h1>Proxy Pattern</h1>
+      <p class="hero-text narrow">
+        The Proxy Pattern is about controlling access by placing a middleman in front of the real
+        object while keeping the same interface.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Proxy is entirely about controlling access.</li>
+          <li>A debit or credit card is a real-world proxy for actual money.</li>
+          <li>The proxy stands between the client and the real object.</li>
+          <li>It shares the exact same interface so the client feels like it is talking directly to the real object.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Problematic Scenario</h2>
+        <p class="section-intro">
+          Imagine a corporate application with a salary database. Without a proxy, any caller can
+          directly access sensitive salary data, even if the user should not be allowed to see it.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>No access control in front of the real database</span>
+          </div>
+          <pre><code><span class="code-keyword">public class</span> <span class="code-type">SecretDatabase</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">DisplaySalaries</span>()
+    {
+        <span class="code-comment">// PROBLEM: There is no security! Anyone who calls this gets the data.</span>
+        Console.WriteLine(<span class="code-string">"CEO Salary: $1M | Intern Salary: $20K"</span>);
+    }
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">CorporateApp</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">RunApp</span>()
+    {
+        <span class="code-type">string</span> myRole = <span class="code-string">"Intern"</span>;
+        <span class="code-type">SecretDatabase</span> db = <span class="code-keyword">new</span> <span class="code-type">SecretDatabase</span>();
+
+        db.DisplaySalaries();
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Why the Bad Fix Is Still Bad</h2>
+        <p>
+          A quick fix would be putting role checks directly inside <code>SecretDatabase</code>. But
+          that violates the single responsibility principle. The database should focus on fetching
+          data, not acting like a security guard that manages roles and permissions.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>When to Apply Proxy</h2>
+        <ul class="note-list">
+          <li>Protection Proxy: check security before letting the client reach the real object.</li>
+          <li>Virtual Proxy: delay loading a heavy object until it is actually needed.</li>
+          <li>Remote Proxy: hide network communication for objects living on another server.</li>
+          <li>Caching Proxy: save expensive results and return them quickly on repeated requests.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Core Idea</h2>
+        <p>
+          The pattern says: create a middleman class, the proxy, that shares the exact same
+          interface as the real object. The client thinks it is talking to the real database, but it
+          is actually speaking to the proxy first. The proxy decides whether and when the real object
+          should be accessed.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Proxy Pattern Solution</h2>
+        <p>
+          Introduce a proxy database that implements the same database interface, stores the user
+          role, checks permission, and only forwards the request to the real database if access is
+          allowed.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Pseudocode</span>
+            <span>Proxy-based design</span>
+          </div>
+          <pre><code><span class="code-type">IDatabase</span>: <span class="code-method">DisplaySalary</span>()
+
+<span class="code-type">SecretDatabase</span>: <span class="code-type">IDatabase</span>
+{
+    <span class="code-method">DisplaySalary</span>()
+    {
+        print(<span class="code-string">"CEO: $1M, Intern: $20K"</span>);
+    }
+}
+
+<span class="code-type">ProxyDatabase</span>: <span class="code-type">IDatabase</span>
+{
+    <span class="code-type">string</span> userRole;
+    <span class="code-type">IDatabase</span> db;
+
+    <span class="code-method">ProxyDatabase</span>(ur) =&gt; userRole = ur;
+
+    <span class="code-method">DisplaySalary</span>()
+    {
+        <span class="code-keyword">if</span> (userRole == <span class="code-string">'Manager'</span>)
+        {
+            <span class="code-keyword">if</span> (db == <span class="code-keyword">null</span>) db = <span class="code-keyword">new</span> <span class="code-type">SecretDatabase</span>();
+            db.DisplaySalary();
+        }
+        <span class="code-keyword">else</span>
+        {
+            print(<span class="code-string">"ACCESS DENIED"</span>);
+        }
+    }
+}
+
+main()
+{
+    userRole = <span class="code-string">'intern'</span>;
+
+    <span class="code-type">IDatabase</span> myDb = <span class="code-keyword">new</span> <span class="code-type">ProxyDatabase</span>(userRole);
+    myDb.DisplaySalary();
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          The client and the real object never need to know about the access-control details. The
+          proxy handles those concerns and only delegates to the real object when the rules are
+          satisfied.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Keeps control logic separate from the real object.</li>
+          <li>Supports access control, lazy loading, remoting, and caching without changing client code.</li>
+          <li>Preserves the same interface for both proxy and real object.</li>
+          <li>Protects sensitive or expensive resources behind one controlled entry point.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="note-nav.js"></script>
+</body>
+</html>
