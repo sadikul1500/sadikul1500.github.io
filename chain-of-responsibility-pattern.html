@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chain of Responsibility | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body id="top" data-prev="proxy-pattern.html" data-next="">
+  <div class="page-shell">
+    <nav class="note-nav" aria-label="Pattern navigation"></nav>
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Behavioral Design Pattern</p>
+      <h1>Chain of Responsibility</h1>
+      <p class="hero-text narrow">
+        Chain of Responsibility is about passing a request along a linked sequence of handlers until
+        the right object decides to process it.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Behavioral patterns are about how objects communicate and assign responsibilities.</li>
+          <li>Chain of Responsibility passes a request through a chain of handler objects.</li>
+          <li>Each handler checks whether it can process the request.</li>
+          <li>If it cannot, it forwards the request to the next handler in the chain.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Problematic Scenario</h2>
+        <p class="section-intro">
+          Imagine an expense approval system. Small expenses can be approved by a manager, medium
+          ones by a director, and larger ones by the CEO. Without a pattern, the logic often becomes
+          one rigid block of conditionals.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>Monolithic approval logic</span>
+          </div>
+          <pre><code><span class="code-keyword">public class</span> <span class="code-type">ExpenseReport</span>
+{
+    <span class="code-keyword">public</span> <span class="code-type">string</span> Purpose;
+    <span class="code-keyword">public</span> <span class="code-type">double</span> Amount;
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">ExpenseHandler</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">ProcessExpense</span>(<span class="code-type">ExpenseReport</span> expense)
+    {
+        <span class="code-comment">// PROBLEM: A massive, rigid if/else block!</span>
+        <span class="code-keyword">if</span> (expense.Amount &lt;= 1000)
+        {
+            Console.WriteLine($<span class="code-string">"Manager approved ${expense.Amount} for {expense.Purpose}"</span>);
+        }
+        <span class="code-keyword">else if</span> (expense.Amount &lt;= 5000)
+        {
+            Console.WriteLine($<span class="code-string">"Director approved ${expense.Amount} for {expense.Purpose}"</span>);
+        }
+        <span class="code-keyword">else if</span> (expense.Amount &lt;= 10000)
+        {
+            Console.WriteLine($<span class="code-string">"CEO approved ${expense.Amount} for {expense.Purpose}"</span>);
+        }
+        <span class="code-keyword">else</span>
+        {
+            Console.WriteLine($<span class="code-string">"Expense of ${expense.Amount} requires a Board Meeting!"</span>);
+        }
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>When to Apply Chain of Responsibility</h2>
+        <ul class="note-list">
+          <li>Code is a giant switch statement or a wall of if/else checks to decide who should handle a request.</li>
+          <li>We want to decouple the sender of a request from the receiver.</li>
+          <li>We need to change the order of handlers dynamically at runtime.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Core Idea</h2>
+        <p>
+          The pattern says: take every branch of the conditional logic and turn it into its own
+          standalone handler class. Then link those handlers together with a <code>Next</code>
+          reference. Each handler asks one question: can I handle this request? If not, it passes
+          the request forward.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Chain of Responsibility Solution</h2>
+        <p>
+          Each approver becomes one object in the chain. The manager checks first, then the
+          director, then the CEO. The client only sends the request to the start of the chain and
+          does not need to know who eventually handles it.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Pseudocode</span>
+            <span>Chain-based design</span>
+          </div>
+          <pre><code><span class="code-keyword">abstract class</span> <span class="code-type">Approver</span>
+{
+    <span class="code-type">Approver</span> nextApprover;
+
+    <span class="code-method">SetNext</span>(<span class="code-type">Approver</span> a) =&gt; nextApprover = a;
+
+    <span class="code-keyword">abstract</span> <span class="code-method">ProcessRequest</span>(<span class="code-type">ExpenseReport</span> r);
+}
+
+<span class="code-type">Manager</span>: <span class="code-type">Approver</span>
+{
+    <span class="code-method">ProcessRequest</span>(<span class="code-type">ExpenseReport</span> r)
+    {
+        <span class="code-keyword">if</span> (r.amount &lt;= 5000) =&gt; approve;
+        <span class="code-keyword">else if</span> (nextApprover != <span class="code-keyword">null</span>) =&gt; nextApprover.ProcessRequest(r);
+    }
+}
+
+<span class="code-type">Director</span>: <span class="code-type">Approver</span>
+{
+    <span class="code-method">ProcessRequest</span>(<span class="code-type">ExpenseReport</span> r)
+    {
+        <span class="code-keyword">if</span> (r.amount &lt;= 15000) =&gt; approve;
+        <span class="code-keyword">else if</span> (nextApprover != <span class="code-keyword">null</span>) =&gt; nextApprover.ProcessRequest(r);
+    }
+}
+
+<span class="code-type">CEO</span>: <span class="code-type">Approver</span>
+{
+    <span class="code-method">ProcessRequest</span>(<span class="code-type">ExpenseReport</span> r)
+    {
+        <span class="code-keyword">if</span> (r.amount &lt;= 50000) =&gt; approve;
+        <span class="code-keyword">else</span> =&gt; decline;
+    }
+}
+
+main()
+{
+    <span class="code-keyword">var</span> m = <span class="code-keyword">new</span> <span class="code-type">Manager</span>();
+    <span class="code-keyword">var</span> d = <span class="code-keyword">new</span> <span class="code-type">Director</span>();
+    <span class="code-keyword">var</span> c = <span class="code-keyword">new</span> <span class="code-type">CEO</span>();
+
+    m.SetNext(d);
+    d.SetNext(c);
+
+    m.ProcessRequest(<span class="code-keyword">new</span> <span class="code-type">ExpenseReport</span> { Amount = 30000 });
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          The sender no longer decides who should handle the request. It simply sends the request to
+          the first handler. Responsibility flows forward through the chain until one handler takes
+          ownership.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Removes large conditional blocks from the client.</li>
+          <li>Decouples the sender from specific receivers.</li>
+          <li>Makes approval or processing order easy to rearrange.</li>
+          <li>Keeps each handler focused on one responsibility.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="note-nav.js"></script>
+</body>
+</html>
