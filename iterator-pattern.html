@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iterator Pattern | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body id="top" data-prev="command-pattern.html" data-next="">
+  <div class="page-shell">
+    <nav class="note-nav" aria-label="Pattern navigation"></nav>
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Behavioral Design Pattern</p>
+      <h1>Iterator Pattern</h1>
+      <p class="hero-text narrow">
+        The Iterator Pattern provides a standard way to move through a collection without exposing
+        the collection's internal storage structure.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Iterator is about navigating data through a standard interface.</li>
+          <li>The client can move item by item without knowing whether the data is stored in an array, list, tree, stack, or buffer.</li>
+          <li>A TV remote is a useful example: pressing Channel Up does not reveal where the TV stores or receives channels.</li>
+          <li>The collection hides its structure and gives the client a simple traversal object.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Problematic Scenario</h2>
+        <p class="section-intro">
+          Imagine a music app that must play songs from different sources. A vinyl record stores
+          songs in an array, while a Spotify playlist stores tracks in a list. The client now has to
+          know both storage details just to play all music.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>Client depends on storage details</span>
+          </div>
+          <pre><code><span class="code-comment">// Uses an Array</span>
+<span class="code-keyword">public class</span> <span class="code-type">VinylRecord</span>
+{
+    <span class="code-keyword">public</span> <span class="code-type">string</span>[] Songs = <span class="code-keyword">new</span> <span class="code-type">string</span>[] { <span class="code-string">"Track 1"</span>, <span class="code-string">"Track 2"</span>, <span class="code-string">"Track 3"</span> };
+}
+
+<span class="code-comment">// Uses a List</span>
+<span class="code-keyword">public class</span> <span class="code-type">SpotifyPlaylist</span>
+{
+    <span class="code-keyword">public</span> <span class="code-type">List</span>&lt;<span class="code-type">string</span>&gt; Tracks = <span class="code-keyword">new</span> <span class="code-type">List</span>&lt;<span class="code-type">string</span>&gt; { <span class="code-string">"Song A"</span>, <span class="code-string">"Song B"</span>, <span class="code-string">"Song C"</span> };
+}
+
+<span class="code-comment">// The Client</span>
+<span class="code-keyword">public class</span> <span class="code-type">MusicApp</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">PlayAllMusic</span>(<span class="code-type">VinylRecord</span> record, <span class="code-type">SpotifyPlaylist</span> playlist)
+    {
+        <span class="code-comment">// THE PROBLEM: The client has to know exactly how the data is stored!</span>
+        <span class="code-keyword">for</span> (<span class="code-type">int</span> i = 0; i &lt; record.Songs.Length; i++)
+        {
+            Console.WriteLine(record.Songs[i]);
+        }
+
+        <span class="code-keyword">for</span> (<span class="code-type">int</span> i = 0; i &lt; playlist.Tracks.Count; i++)
+        {
+            Console.WriteLine(playlist.Tracks[i]);
+        }
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Detecting the Problem</h2>
+        <p>
+          If another team introduces a <code>RadioStation</code> that stores songs inside a complex
+          tree or stack, the <code>MusicApp</code> must be opened again and given a third specialized
+          traversal loop. The client keeps changing every time a new collection structure appears.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Iterator Pattern Solution</h2>
+        <p>
+          Give every collection a way to create an iterator. The iterator exposes only
+          <code>HasNext()</code> and <code>Next()</code>, so the music player can traverse any music
+          source without caring how the songs are stored.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Pseudocode</span>
+            <span>Iterator-based traversal</span>
+          </div>
+          <pre><code><span class="code-type">IIterator</span>
+    - <span class="code-method">HasNext</span>()
+    - <span class="code-method">Next</span>()
+
+<span class="code-type">IMusicCollection</span>
+    - <span class="code-type">IIterator</span> <span class="code-method">CreateCollection</span>()
+
+<span class="code-type">ArrayIterator</span>: <span class="code-type">IIterator</span>
+    - <span class="code-type">string</span> item
+    - position = 0
+    - <span class="code-method">ArrayIterator</span>(arraySong)
+    - <span class="code-method">HasNext</span>() =&gt; <span class="code-keyword">return</span> position &lt; arraySong.length
+    - <span class="code-method">Next</span>() =&gt; <span class="code-keyword">return</span> arraySong[position++]
+
+<span class="code-type">ListIterator</span>: <span class="code-type">IIterator</span>
+    - <span class="code-type">string</span> item
+    - position = 0
+    - <span class="code-method">ListIterator</span>(listSong)
+    - <span class="code-method">HasNext</span>() =&gt; <span class="code-keyword">return</span> position &lt; listSong.length
+    - <span class="code-method">Next</span>() =&gt; <span class="code-keyword">return</span> listSong[position++]
+
+<span class="code-type">VinylRecord</span>: <span class="code-type">IMusicCollection</span>
+    - arraySong = <span class="code-keyword">new</span> Array({<span class="code-string">'track 1'</span>, <span class="code-string">'track 2'</span>})
+    - <span class="code-method">CreateCollection</span>() =&gt; <span class="code-keyword">return</span> <span class="code-keyword">new</span> <span class="code-type">ArrayIterator</span>(arraySong)
+
+<span class="code-type">ListRecord</span>: <span class="code-type">IMusicCollection</span>
+    - listSong = <span class="code-keyword">new</span> List([<span class="code-string">'track 3'</span>, <span class="code-string">'track 4'</span>])
+    - <span class="code-method">CreateCollection</span>() =&gt; <span class="code-keyword">return</span> <span class="code-keyword">new</span> <span class="code-type">ListIterator</span>(listSong)
+
+<span class="code-type">MusicPlayer</span>
+    - <span class="code-method">MusicPlayer</span>(iterator)
+    - <span class="code-method">PlayMusic</span>()
+      {
+          <span class="code-keyword">while</span> (iterator.HasNext())
+          {
+              Writeline(<span class="code-string">'Playing now: '</span> + iterator.Next())
+          }
+      }
+
+Main
+    - <span class="code-type">VinylRecord</span> vr = <span class="code-keyword">new</span>()
+    - <span class="code-type">ListRecord</span> lr = <span class="code-keyword">new</span>()
+    - <span class="code-type">MusicPlayer</span> player1(vr.CreateCollection()), player2(lr.CreateCollection())
+    - player1.PlayMusic()
+    - player2.PlayMusic()</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>The Big C# Secret</h2>
+        <p>
+          This manual version helps us see the true Gang of Four architecture. In modern C#, we
+          almost never write this from scratch because Microsoft built the Iterator pattern directly
+          into the language and base library.
+        </p>
+        <ul class="note-list">
+          <li><code>IEnumerator</code> is the iterator, like the remote control.</li>
+          <li><code>IEnumerable</code> is the collection, like the TV that can provide a traversal object.</li>
+          <li>A <code>foreach</code> loop is the Iterator pattern behind the scenes.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          The client should not care whether data is stored in an array, list, tree, stack, or
+          streaming buffer. It asks for an iterator and walks forward through one common interface.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Hides the internal structure of a collection.</li>
+          <li>Lets different collections be traversed through the same interface.</li>
+          <li>Keeps client code from changing whenever a new storage type appears.</li>
+          <li>Makes traversal logic reusable and consistent.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="note-nav.js"></script>
+</body>
+</html>
