@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Command Pattern | Design Patterns Notes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Code+Pro:wght@400;500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body id="top" data-prev="chain-of-responsibility-pattern.html" data-next="">
+  <div class="page-shell">
+    <nav class="note-nav" aria-label="Pattern navigation"></nav>
+    <header class="subpage-header">
+      <a class="back-link" href="index.html">Back to Home</a>
+      <p class="eyebrow">Behavioral Design Pattern</p>
+      <h1>Command Pattern</h1>
+      <p class="hero-text narrow">
+        The Command Pattern turns a request into a standalone object so actions can be stored,
+        reassigned, executed later, and undone.
+      </p>
+    </header>
+
+    <main class="article-layout">
+      <section class="content-card">
+        <h2>Definition</h2>
+        <ul class="note-list">
+          <li>Command is about taking a request and turning it into a standalone object.</li>
+          <li>Chain of Responsibility passes a request down a line until someone handles it.</li>
+          <li>Command packages the request itself so it can be assigned, executed, stored, or undone.</li>
+          <li>This lets the sender trigger behavior without hardcoding the receiver's method directly.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Problematic Scenario</h2>
+        <p class="section-intro">
+          Imagine a video game with a player and an input handler. Button A jumps and Button B
+          attacks. At first this seems fine, but the actions are physically hardcoded into the
+          button methods.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>C#</span>
+            <span>Hardcoded controller actions</span>
+          </div>
+          <pre><code><span class="code-keyword">public class</span> <span class="code-type">Player</span>
+{
+    <span class="code-keyword">public void</span> <span class="code-method">Jump</span>()
+    {
+        Console.WriteLine(<span class="code-string">"Player jumped!"</span>);
+    }
+
+    <span class="code-keyword">public void</span> <span class="code-method">Attack</span>()
+    {
+        Console.WriteLine(<span class="code-string">"Player swung sword!"</span>);
+    }
+}
+
+<span class="code-keyword">public class</span> <span class="code-type">InputHandler</span>
+{
+    <span class="code-keyword">private</span> <span class="code-type">Player</span> _player;
+
+    <span class="code-keyword">public</span> <span class="code-method">InputHandler</span>(<span class="code-type">Player</span> player)
+    {
+        _player = player;
+    }
+
+    <span class="code-comment">// THE PROBLEM: Hardcoded actions!</span>
+    <span class="code-keyword">public void</span> <span class="code-method">PressButtonA</span>()
+    {
+        _player.Jump();
+    }
+
+    <span class="code-keyword">public void</span> <span class="code-method">PressButtonB</span>()
+    {
+        _player.Attack();
+    }
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Why This Is a Problem</h2>
+        <p>
+          If the user opens settings and says, "Button A should attack, and Button B should jump,"
+          the current code is stuck. <code>PressButtonA()</code> physically calls
+          <code>_player.Jump()</code>, so changing controls means changing the input handler code
+          itself.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>When to Apply Command</h2>
+        <ul class="note-list">
+          <li>We need to reassign actions dynamically, such as remapping game controls.</li>
+          <li>We want to store executed actions so they can be undone later.</li>
+          <li>We want the caller to trigger behavior without knowing the exact receiver method.</li>
+          <li>We need to queue, log, schedule, or replay actions as objects.</li>
+        </ul>
+      </section>
+
+      <section class="content-card">
+        <h2>Command Pattern Solution</h2>
+        <p>
+          Create one command interface with <code>Execute()</code> and <code>Undo()</code>. Each
+          concrete command stores the receiver it needs, such as the player, and knows how to perform
+          one action. The input handler stores commands instead of hardcoded player method calls.
+        </p>
+        <div class="code-block">
+          <div class="code-header">
+            <span>Pseudocode</span>
+            <span>Command-based input handling</span>
+          </div>
+          <pre><code><span class="code-type">Player</span>:
+    <span class="code-method">Jump</span>()
+    <span class="code-method">Attack</span>()
+
+<span class="code-type">ICommand</span>:
+    <span class="code-method">Execute</span>()
+    <span class="code-method">Undo</span>()
+
+<span class="code-type">JumpCommand</span>: <span class="code-type">ICommand</span>
+{
+    <span class="code-type">Player</span> player;
+
+    <span class="code-method">JumpCommand</span>(<span class="code-type">Player</span> player) =&gt; <span class="code-keyword">this</span>.player = player;
+
+    <span class="code-method">Execute</span>() =&gt; player.Jump();
+    <span class="code-method">Undo</span>() =&gt; writeline(<span class="code-string">'reversing jump'</span>);
+}
+
+<span class="code-type">AttackCommand</span>: <span class="code-type">ICommand</span>
+{
+    <span class="code-type">Player</span> player;
+
+    <span class="code-method">AttackCommand</span>(<span class="code-type">Player</span> player) =&gt; <span class="code-keyword">this</span>.player = player;
+
+    <span class="code-method">Execute</span>() =&gt; player.Attack();
+    <span class="code-method">Undo</span>() =&gt; writeline(<span class="code-string">'reversing attack'</span>);
+}
+
+<span class="code-type">InputHandler</span>
+{
+    <span class="code-type">ICommand</span> ButtonA;
+    <span class="code-type">ICommand</span> ButtonB;
+
+    <span class="code-type">Stack</span>&lt;<span class="code-type">ICommand</span>&gt; _commandHistory;
+
+    <span class="code-method">PressButtonA</span>()
+    {
+        ButtonA.Execute();
+        _commandHistory.push(ButtonA);
+    }
+
+    <span class="code-method">PressButtonB</span>()
+    {
+        ButtonB.Execute();
+        _commandHistory.push(ButtonB);
+    }
+
+    <span class="code-method">PressUndo</span>()
+    {
+        lastCommand = _commandHistory.pop();
+        lastCommand.Undo();
+    }
+}
+
+Main
+{
+    <span class="code-type">Player</span> player;
+    <span class="code-type">InputHandler</span> controller;
+
+    controller.ButtonA = <span class="code-keyword">new</span> <span class="code-type">JumpCommand</span>(player);
+    controller.ButtonB = <span class="code-keyword">new</span> <span class="code-type">AttackCommand</span>(player);
+
+    <span class="code-comment">// playing game</span>
+    controller.PressButtonA();
+    controller.PressButtonB();
+
+    <span class="code-comment">// undo</span>
+    controller.PressUndo();
+
+    <span class="code-comment">// change settings</span>
+    controller.ButtonA = <span class="code-keyword">new</span> <span class="code-type">AttackCommand</span>(player);
+    controller.ButtonB = <span class="code-keyword">new</span> <span class="code-type">JumpCommand</span>(player);
+
+    <span class="code-comment">// playing game</span>
+    controller.PressButtonA();
+    controller.PressButtonB();
+}</code></pre>
+        </div>
+      </section>
+
+      <section class="content-card">
+        <h2>Key Idea</h2>
+        <p>
+          The input handler no longer knows what a button really does. It only knows that a button
+          has a command and commands can execute. That small separation makes remapping, undo, and
+          command history natural instead of awkward.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Tradeoff</h2>
+        <p>
+          Command can create class explosion. If a game has 50 different actions, it may need 50
+          small command classes. That cost is often acceptable when it buys remapping, undo, replay,
+          logging, or queueing.
+        </p>
+      </section>
+
+      <section class="content-card">
+        <h2>Benefits</h2>
+        <ul class="note-list">
+          <li>Decouples the sender from the object that performs the action.</li>
+          <li>Supports runtime action remapping.</li>
+          <li>Makes undo possible through command history.</li>
+          <li>Allows commands to be queued, logged, delayed, or replayed.</li>
+        </ul>
+      </section>
+    </main>
+  </div>
+  <script type="module" src="note-nav.js"></script>
+</body>
+</html>
